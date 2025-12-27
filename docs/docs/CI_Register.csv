@@ -1,0 +1,9 @@
+ID,CI Name,Type,Owner,Status,Location
+CI-001,SCM Plan,Document,Member 2,Draft,/docs
+CI-002,CI Register,Document,Member 3,Draft,/docs
+CI-003,README,Document,Member 1,Released,Root
+CI-004,index.html,File,Member 4,Planned,/src
+CI-005,login.html,File,Member 4,Planned,/src
+CI-006,admin.html,File,Member 5,Planned,/src
+CI-007,main.js,File,Member 6,Planned,/src/js
+CI-008,style.css,File,Member 7,Planned,/src/css
