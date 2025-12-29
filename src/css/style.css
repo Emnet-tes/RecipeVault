@@ -1,7 +1,44 @@
-/* RecipeVault Stylesheet */
-/* Version 0.1 */
+/*
+  Theme tokens
+  - Keep these small and consistent.
+*/
+
+/* DEFAULT (Light Mode) */
+:root {
+    --bg-color: #f8f9fa;
+    --surface-color: #ffffff;
+    --surface-2-color: #f1f3f5;
+    --text-color: #212529;
+    --text-muted-color: #6c757d;
+    --border-color: #dee2e6;
+    --navbar-bg: #212529;
+    --navbar-text: #ffffff;
+    --link-color: #0d6efd;
+}
 
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+a {
+    color: var(--link-color);
+}
+
+.card {
+    background-color: var(--surface-color) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color);
+}
+
+/* Small utility for ingredient chips/tags used in dashboard */
+.ingredient-tag {
+    background-color: var(--surface-2-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 5px 10px;
+    border-radius: 999px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    display: inline-block;
 }
