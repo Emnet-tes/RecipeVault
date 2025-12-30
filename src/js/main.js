@@ -40,8 +40,6 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-/* ================= PUBLIC HOME LOGIC ================= */
-
 function renderPublicList() {
     const grid = document.getElementById('publicGrid');
     if (!grid) return;
@@ -49,6 +47,7 @@ function renderPublicList() {
     const recipes = getRecipes();
     const sName = document.getElementById('publicSearchName').value.toLowerCase();
     const sIng = document.getElementById('publicSearchIng').value.toLowerCase();
+    const showFav = document.getElementById('favFilter').checked; // Checkbox status
 
     grid.innerHTML = '';
 
@@ -56,7 +55,9 @@ function renderPublicList() {
         const safeIng = Array.isArray(r.ingredients) ? r.ingredients : [];
         const matchesName = r.name.toLowerCase().includes(sName);
         const matchesIng = safeIng.some(i => i.toLowerCase().includes(sIng));
-        return matchesName && (sIng === '' || matchesIng);
+        const matchesFav = showFav ? r.isFav === true : true; // Filter logic
+
+        return matchesName && (sIng === '' || matchesIng) && matchesFav;
     });
 
     if (filtered.length === 0) {
@@ -66,15 +67,17 @@ function renderPublicList() {
 
     filtered.forEach(r => {
         const safeIng = Array.isArray(r.ingredients) ? r.ingredients : [];
-        const ingBadges = safeIng
-            .map(i => `<span class="badge bg-secondary me-1">${i}</span>`)
-            .join('');
+        const ingBadges = safeIng.map(i => `<span class="badge bg-secondary me-1">${i}</span>`).join('');
+        // Heart Icon Logic
+        const heartClass = r.isFav ? 'active' : ''; 
+        const heartIcon = r.isFav ? '❤️' : '🤍';
 
         const card = `
         <div class="col-md-4 mb-4">
             <div class="card h-100 shadow-sm">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <span class="badge bg-warning text-dark">${r.category}</span>
+                    <span class="heart-btn ${heartClass}" onclick="toggleFavorite(${r.id})">${heartIcon}</span>
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">${r.name}</h5>
@@ -217,4 +220,18 @@ function prepareModalForEdit(id) {
     document.getElementById('recipeInstructions').value = r.instructions;
     tempIngredients = Array.isArray(r.ingredients) ? [...r.ingredients] : [];
     renderTempIng();
+}
+
+
+
+
+function toggleFavorite(id) {
+    let recipes = getRecipes();
+    const index = recipes.findIndex(r => r.id === id);
+    if (index > -1) {
+        // Switch true/false
+        recipes[index].isFav = !recipes[index].isFav;
+        saveToDB(recipes);
+        renderPublicList(); // Re-render to show change
+    }
 }
