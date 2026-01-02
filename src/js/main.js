@@ -20,6 +20,18 @@ function saveToDB(data) {
 
 let tempIngredients = [];
 
+/* =================  EXPORT LOGIC (New Feature) ================= */
+function exportData() {
+    const data = JSON.stringify(getRecipes(), null, 2);
+    const blob = new Blob([data], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'recipe_backup_' + Date.now() + '.txt';
+    a.click();
+}
+
+
 /* ================= AUTHENTICATION ================= */
 
 function handleLogin(e) {
