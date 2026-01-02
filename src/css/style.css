@@ -1,6 +1,6 @@
 /*
   Theme tokens
-  - Keep these small and consistent.
+  - Keep these small and consistent. All component rules below should derive from them.
 */
 
 /* DEFAULT (Light Mode) */
@@ -11,24 +11,181 @@
     --text-color: #212529;
     --text-muted-color: #6c757d;
     --border-color: #dee2e6;
-    --navbar-bg: #212529;
+    --navbar-bg: #212529; /* Dark Bootstrap default */
     --navbar-text: #ffffff;
     --link-color: #0d6efd;
+    --focus-ring: rgba(13, 110, 253, 0.35);
+}
+
+/* DARK MODE OVERRIDES */
+body.dark-mode {
+    --bg-color: #0f1115;
+    --surface-color: #151922;
+    --surface-2-color: #1b2130;
+    --text-color: #e8eaf0;
+    --text-muted-color: #a9b0c0;
+    --border-color: #2a3242;
+    --navbar-bg: #0b0d12;
+    --navbar-text: #e8eaf0;
+    --link-color: #8ab4ff;
+    --focus-ring: rgba(138, 180, 255, 0.35);
 }
 
 body {
     background-color: var(--bg-color) !important;
     color: var(--text-color) !important;
+    transition: background 0.3s, color 0.3s;
 }
 
+/*
+    Some pages set Bootstrap bg utility classes directly on <body> (e.g. bg-light, bg-secondary).
+    In dark mode we must force the real theme background to win.
+*/
+body.dark-mode,
+body.dark-mode.bg-light,
+body.dark-mode.bg-white,
+body.dark-mode.bg-secondary,
+body.dark-mode.bg-dark {
+        background-color: var(--bg-color) !important;
+        color: var(--text-color) !important;
+}
+
+/* Typography & links */
 a {
     color: var(--link-color);
 }
+body.dark-mode a {
+    color: var(--link-color);
+}
 
+/* Make common Bootstrap "light" utility backgrounds theme-aware */
+body.dark-mode .bg-light,
+body.dark-mode .bg-white {
+    background-color: var(--surface-color) !important;
+}
+
+/* Cards */
 .card {
     background-color: var(--surface-color) !important;
     border: 1px solid var(--border-color) !important;
     color: var(--text-color);
+}
+
+/* Common container surfaces that can look white in dark mode */
+body.dark-mode .shadow-sm,
+body.dark-mode .shadow,
+body.dark-mode .rounded,
+body.dark-mode .border {
+    border-color: var(--border-color) !important;
+}
+body.dark-mode .card-header,
+body.dark-mode .card-footer,
+body.dark-mode .list-group-item,
+body.dark-mode .dropdown-menu,
+body.dark-mode .input-group-text {
+    background-color: var(--surface-2-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Navbars */
+body.dark-mode .navbar {
+    background-color: var(--navbar-bg) !important;
+}
+body.dark-mode .navbar .navbar-brand,
+body.dark-mode .navbar .nav-link,
+body.dark-mode .navbar .navbar-text {
+    color: var(--navbar-text) !important;
+}
+
+/* Tables */
+body.dark-mode .table {
+    color: var(--text-color) !important;
+}
+body.dark-mode .table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text-color);
+    --bs-table-border-color: var(--border-color);
+}
+body.dark-mode .table > :not(caption) > * > * {
+    background-color: transparent !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Table headers: normalize Bootstrap color variants in dark mode */
+body.dark-mode .table thead,
+body.dark-mode .table thead th {
+    background-color: var(--surface-2-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+body.dark-mode .table thead.table-dark th,
+body.dark-mode .table thead.table-primary th,
+body.dark-mode .table thead.table-light th {
+    background-color: var(--surface-2-color) !important;
+    color: var(--text-color) !important;
+}
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * {
+    --bs-table-accent-bg: rgba(255, 255, 255, 0.03);
+    color: var(--text-color) !important;
+}
+body.dark-mode .table-hover > tbody > tr:hover > * {
+    --bs-table-accent-bg: rgba(255, 255, 255, 0.06);
+    color: var(--text-color) !important;
+}
+
+/* Form controls */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: var(--surface-2-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+body.dark-mode .form-control::placeholder {
+    color: rgba(232, 234, 240, 0.55);
+}
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    border-color: var(--link-color) !important;
+    box-shadow: 0 0 0 0.25rem var(--focus-ring) !important;
+}
+
+/* Buttons: keep Bootstrap colors, but ensure outlines look good on dark */
+body.dark-mode .btn-outline-light {
+    border-color: rgba(232, 234, 240, 0.55) !important;
+    color: var(--navbar-text) !important;
+}
+body.dark-mode .btn-outline-light:hover {
+    background-color: rgba(232, 234, 240, 0.12) !important;
+}
+
+/* Modals */
+body.dark-mode .modal-content {
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+body.dark-mode .modal-header {
+    border-bottom-color: var(--border-color) !important;
+}
+body.dark-mode .modal-footer {
+    border-top-color: var(--border-color) !important;
+}
+
+/* Generic muted text */
+body.dark-mode .text-muted {
+    color: var(--text-muted-color) !important;
+}
+
+.heart-btn {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #ccc;
+    transition: color 0.2s;
+}
+.heart-btn.active {
+    color: red;
 }
 
 /* Small utility for ingredient chips/tags used in dashboard */
@@ -41,4 +198,10 @@ a {
     margin-right: 5px;
     margin-bottom: 5px;
     display: inline-block;
+}
+.ingredient-tag span {
+    cursor: pointer;
+    color: #ff6b6b;
+    font-weight: bold;
+    margin-left: 8px;
 }

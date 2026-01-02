@@ -3,24 +3,30 @@
 function initializeDB() {
     if (!localStorage.getItem('recipes')) {
         const initial = [
-            { id: 1, name: 'Doro Wat', category: 'Dinner', ingredients: ['Chicken', 'Onion', 'Egg'], instructions: 'Spicy stew.' },
-            { id: 2, name: 'Avocado Salad', category: 'Lunch', ingredients: ['Avocado', 'Tomato', 'Oil'], instructions: 'Mix well.' }
+            { id: 1, name: 'Doro Wat', category: 'Dinner', ingredients: ['Chicken', 'Onion', 'Egg'], instructions: 'Spicy stew.', isFav: false },
+            { id: 2, name: 'Avocado Salad', category: 'Lunch', ingredients: ['Avocado', 'Tomato', 'Oil'], instructions: 'Mix well.', isFav: true }
         ];
         saveToDB(initial);
     }
+    // Load Theme Preference
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
 }
 
-function getRecipes() {
-    return JSON.parse(localStorage.getItem('recipes') || '[]');
-}
-
-function saveToDB(data) {
-    localStorage.setItem('recipes', JSON.stringify(data));
-}
+function getRecipes() { return JSON.parse(localStorage.getItem('recipes') || '[]'); }
+function saveToDB(data) { localStorage.setItem('recipes', JSON.stringify(data)); }
 
 let tempIngredients = [];
 
-/* =================  EXPORT LOGIC (New Feature) ================= */
+/* ================= 1. THEME LOGIC (New Feature) ================= */
+function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    const mode = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    localStorage.setItem('theme', mode);
+}
+
+/* ================= 2. EXPORT LOGIC (New Feature) ================= */
 function exportData() {
     const data = JSON.stringify(getRecipes(), null, 2);
     const blob = new Blob([data], { type: 'text/plain' });
@@ -31,26 +37,22 @@ function exportData() {
     a.click();
 }
 
-
 /* ================= AUTHENTICATION ================= */
-
 function handleLogin(e) {
     e.preventDefault();
-    if (
-        document.getElementById('user').value === 'admin' &&
-        document.getElementById('pass').value === '1234'
-    ) {
+    if (document.getElementById('user').value === 'admin' && document.getElementById('pass').value === '1234') {
         localStorage.setItem('isLoggedIn', 'true');
         window.location.href = 'admin.html';
     } else {
         document.getElementById('error').classList.remove('d-none');
     }
 }
-
 function logout() {
     localStorage.removeItem('isLoggedIn');
     window.location.href = 'index.html';
 }
+
+/* ================= PUBLIC HOME LOGIC ================= */
 
 function renderPublicList() {
     const grid = document.getElementById('publicGrid');
@@ -103,19 +105,31 @@ function renderPublicList() {
     });
 }
 
+// TOGGLE FAVORITE
+function toggleFavorite(id) {
+    let recipes = getRecipes();
+    const index = recipes.findIndex(r => r.id === id);
+    if (index > -1) {
+        // Switch true/false
+        recipes[index].isFav = !recipes[index].isFav;
+        saveToDB(recipes);
+        renderPublicList(); // Re-render to show change
+    }
+}
+
 /* ================= ADMIN LOGIC ================= */
 
 function renderAdminList() {
     const tbody = document.getElementById('adminTableBody');
     if (!tbody) return;
 
-    const recipes = getRecipes();
+    const recipes = getRecipes(); 
     tbody.innerHTML = '';
 
     recipes.forEach(r => {
         const safeIng = Array.isArray(r.ingredients) ? r.ingredients : [];
         let displayIng = safeIng.slice(0, 3).join(', ');
-        if (safeIng.length > 3) displayIng += '...';
+        if(safeIng.length > 3) displayIng += '...';
 
         const row = `
             <tr>
@@ -123,12 +137,9 @@ function renderAdminList() {
                 <td>${r.category}</td>
                 <td>${displayIng}</td>
                 <td class="text-end">
-                    <button class="btn btn-sm btn-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#recipeModal"
-                        onclick="prepareModalForEdit(${r.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger"
-                        onclick="deleteRecipe(${r.id})">Delete</button>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#recipeModal" 
+                    onclick="prepareModalForEdit(${r.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteRecipe(${r.id})">Delete</button>
                 </td>
             </tr>
         `;
@@ -138,91 +149,64 @@ function renderAdminList() {
 
 function handleFormSubmit(e) {
     e.preventDefault();
-
     const id = document.getElementById('recipeId').value;
     const name = document.getElementById('recipeName').value;
     const cat = document.getElementById('recipeCategory').value;
     const inst = document.getElementById('recipeInstructions').value;
-
+    
     let recipes = getRecipes();
+    // Preserve "isFav" status if editing, default false if new
+    let isFav = false; 
 
     if (id) {
         const index = recipes.findIndex(r => r.id == id);
         if (index > -1) {
-            recipes[index] = {
-                id: parseInt(id),
-                name,
-                category: cat,
-                ingredients: tempIngredients,
-                instructions: inst
-            };
+            isFav = recipes[index].isFav || false; // Keep existing Fav status
+            recipes[index] = { id: parseInt(id), name, category: cat, ingredients: tempIngredients, instructions: inst, isFav: isFav };
         }
     } else {
-        recipes.push({
-            id: Date.now(),
-            name,
-            category: cat,
-            ingredients: tempIngredients,
-            instructions: inst
-        });
+        const newId = Date.now();
+        recipes.push({ id: newId, name, category: cat, ingredients: tempIngredients, instructions: inst, isFav: false });
     }
-
     saveToDB(recipes);
     bootstrap.Modal.getInstance(document.getElementById('recipeModal')).hide();
-    renderAdminList();
+    renderAdminList(); 
 }
 
 function deleteRecipe(id) {
     if (confirm('Are you sure?')) {
-        const recipes = getRecipes().filter(r => r.id !== id);
+        let recipes = getRecipes().filter(r => r.id !== id);
         saveToDB(recipes);
         renderAdminList();
     }
 }
 
 /* ================= INGREDIENT HELPERS ================= */
-
 function addIngredient() {
     const select = document.getElementById('ingDropdown');
     const custom = document.getElementById('ingCustom');
     const val = custom.value.trim() || select.value;
-
     if (val && !tempIngredients.includes(val)) {
         tempIngredients.push(val);
         renderTempIng();
-        custom.value = '';
-        select.value = '';
+        custom.value = ''; select.value = '';
     }
 }
-
 function removeIngredient(val) {
     tempIngredients = tempIngredients.filter(i => i !== val);
     renderTempIng();
 }
-
 function renderTempIng() {
-    const con =
-        document.getElementById('ingredientsContainer') ||
-        document.getElementById('ingredientsListContainer');
-    if (!con) return;
-
-    con.innerHTML = tempIngredients
-        .map(i =>
-            `<span class="badge bg-info text-dark me-1 mb-1"
-             style="cursor:pointer"
-             onclick="removeIngredient('${i}')">${i} &times;</span>`
-        )
-        .join('');
+    const con = document.getElementById('ingredientsContainer');
+    con.innerHTML = tempIngredients.map(i => `<span class="badge bg-info text-dark me-1 mb-1" style="cursor:pointer" onclick="removeIngredient('${i}')">${i} &times;</span>`).join('');
 }
-
 function prepareModalForAdd() {
     document.getElementById('modalTitle').innerText = 'Add Recipe';
     document.getElementById('recipeForm').reset();
     document.getElementById('recipeId').value = '';
+    document.getElementById('ingredientsContainer').innerHTML = '';
     tempIngredients = [];
-    renderTempIng();
 }
-
 function prepareModalForEdit(id) {
     const r = getRecipes().find(item => item.id === id);
     document.getElementById('modalTitle').innerText = 'Edit Recipe';
@@ -234,16 +218,82 @@ function prepareModalForEdit(id) {
     renderTempIng();
 }
 
+/* ================= DASHBOARD LOGIC (Table View) ================= */
 
+function renderRecipes() {
+    const tbody = document.getElementById('recipeTableBody');
+    if (!tbody) return;
 
+    const recipes = getRecipes();
+    const sNameEl = document.getElementById('searchName');
+    const sIngEl = document.getElementById('searchIng');
+    const sName = (sNameEl?.value || '').toLowerCase();
+    const sIng = (sIngEl?.value || '').toLowerCase();
 
-function toggleFavorite(id) {
-    let recipes = getRecipes();
-    const index = recipes.findIndex(r => r.id === id);
-    if (index > -1) {
-        // Switch true/false
-        recipes[index].isFav = !recipes[index].isFav;
-        saveToDB(recipes);
-        renderPublicList(); // Re-render to show change
+    const filtered = recipes.filter(r => {
+        const name = (r.name || '').toLowerCase();
+        const ing = Array.isArray(r.ingredients) ? r.ingredients : [];
+        const matchesName = name.includes(sName);
+        const matchesIng = sIng === '' ? true : ing.some(i => (i || '').toLowerCase().includes(sIng));
+        return matchesName && matchesIng;
+    });
+
+    tbody.innerHTML = '';
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">No recipes found.</td>
+            </tr>
+        `;
+        return;
     }
+
+    filtered.forEach(r => {
+        const safeIng = Array.isArray(r.ingredients) ? r.ingredients : [];
+        const ingHtml = safeIng.length
+            ? safeIng.map(i => `<span class="ingredient-tag">${escapeHtml(String(i))}</span>`).join('')
+            : '<span class="text-muted">—</span>';
+
+        const row = `
+            <tr>
+                <td class="fw-semibold">${escapeHtml(String(r.name || ''))}</td>
+                <td>${escapeHtml(String(r.category || ''))}</td>
+                <td>${ingHtml}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#recipeModal" onclick="prepareModalForEdit(${r.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteRecipe(${r.id}); renderRecipes();">Delete</button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+function escapeHtml(str) {
+    return str
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+/* Dashboard modal uses a different container id than admin page */
+function renderTempIng() {
+    const con = document.getElementById('ingredientsContainer') || document.getElementById('ingredientsListContainer');
+    if (!con) return;
+
+    con.innerHTML = tempIngredients
+        .map(i => `<span class="badge bg-info text-dark me-1 mb-1" style="cursor:pointer" onclick="removeIngredient('${String(i).replaceAll("'", "\\'")}')">${escapeHtml(String(i))} &times;</span>`)
+        .join('');
+}
+
+function prepareModalForAdd() {
+    document.getElementById('modalTitle').innerText = 'Add Recipe';
+    document.getElementById('recipeForm').reset();
+    document.getElementById('recipeId').value = '';
+    const con = document.getElementById('ingredientsContainer') || document.getElementById('ingredientsListContainer');
+    if (con) con.innerHTML = '';
+    tempIngredients = [];
 }
