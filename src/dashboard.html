@@ -14,6 +14,7 @@
         <div class="container">
             <a class="navbar-brand" href="dashboard.html">Dashboard</a>
             <div class="ms-auto d-flex align-items-center gap-2">
+                <button class="btn btn-outline-light btn-sm" onclick="toggleTheme()">🌓 Theme</button>
                 <a class="btn btn-outline-light btn-sm" href="admin.html">Admin</a>
                 <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
             </div>
@@ -46,7 +47,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Category</th>
-                            <th>Ingredients</th>
+                            <th>Ingredients</th> <!-- New Column -->
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -60,7 +61,7 @@
 
     <!-- CREATE/EDIT MODAL -->
     <div class="modal fade" id="recipeModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg"> <!-- Larger Modal -->
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="modalTitle">Add Recipe</h5>
@@ -69,7 +70,8 @@
                 <div class="modal-body">
                     <form id="recipeForm">
                         <input type="hidden" id="recipeId">
-
+                        
+                        <!-- Row 1: Name & Category -->
                         <div class="row mb-3">
                             <div class="col-md-8">
                                 <label class="form-label">Recipe Name</label>
@@ -87,9 +89,11 @@
                             </div>
                         </div>
 
+                        <!-- Row 2: Ingredients Builder -->
                         <div class="mb-3 p-3 bg-light rounded border">
                             <label class="form-label fw-bold">Ingredients</label>
                             <div class="input-group mb-2">
+                                <!-- Standard List -->
                                 <select class="form-select" id="ingDropdown">
                                     <option value="" selected disabled>Select Ingredient...</option>
                                     <option value="Onion">Onion</option>
@@ -102,15 +106,18 @@
                                     <option value="Pepper">Pepper</option>
                                     <option value="Oil">Oil</option>
                                 </select>
+                                <!-- Custom Input -->
                                 <input type="text" class="form-control" id="ingCustom" placeholder="Or type custom...">
                                 <button type="button" class="btn btn-secondary" onclick="addIngredient()">Add</button>
                             </div>
-                            <div id="ingredientsListContainer"></div>
+                            <!-- Where selected ingredients appear -->
+                            <div id="ingredientsListContainer"></div> 
                         </div>
 
+                        <!-- Row 3: Instructions -->
                         <div class="mb-3">
                             <label class="form-label">Cooking Instructions</label>
-                            <textarea class="form-control" id="recipeInstructions" rows="4"></textarea>
+                            <textarea class="form-control" id="recipeInstructions" rows="4" placeholder="Step 1..."></textarea>
                         </div>
 
                         <div class="text-end">
